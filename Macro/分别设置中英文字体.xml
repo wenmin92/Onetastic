@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-16"?>
-<Macro name="分别设置中英文字体" category="Font" description="如果选中部分文本，则只对选中部分所在段落进行修改，否则对当前页面所有文本修改。&#xD;&#xA;默认中文设为“宋体”，英文设为“Times New Roman”。如果需要更换其他字体，可以编辑这个 Macro，分别设置 cnFont 和 enFont 为自己想要的字体即可。&#xD;&#xA;如果需要统一设置字体大小也可以设置变量 fontSize 的值。&#xD;&#xA;关于 OneNote 设置中英文字体，如需了解更多，请移步 http://t.cn/RT8Imz9 ，欢迎一起讨论。&#xD;&#xA;（PS：大家如果遇到什么问题，或有什么其他需求可以给我留言（请留下联系方式，以便通知您），或直接发邮件到 wenmin92@gmail.com，也可以添加微信 wenmin92）" version="19">
+<Macro name="分别设置中英文字体" category="Font" description="如果选中部分文本，则只对选中部分进行修改，否则对当前页面所有文本修改。默认中文设为“宋体”，英文设为“Times New Roman”。如果需要更换其他字体，可以编辑这个 Macro，分别设置 cnFont 和 enFont 为自己想要的字体即可。如果需要统一设置字体大小也可以设置变量 fontSize 的值。关于 OneNote 设置中英文字体，如需了解更多，请移步 http://t.cn/RT8Imz9 ，欢迎一起讨论。（PS：大家如果遇到什么问题，或有什么其他需求可以给我留言（请留下联系方式，以便通知您），或直接发邮件到 wenmin92@gmail.com，也可以添加微信 wenmin92）" version="19">
   <Comment text="You can change fonts Family below whatever you want" />
   <Expression>$cnFont = "宋体"</Expression>
   <Expression>$enFont = "Times New Roman"</Expression>
   <Comment text="You can change font size below (-1 or 0 means don't change)" />
-  <Expression>$fontSize = -1</Expression>
+  <Expression>$cnFontSize = 12</Expression>
+  <Expression>$enFontSize = 11</Expression>
   <Comment text="Program Starts" />
   <Comment text="开始修改" />
   <Comment text="这里确定用户是否选中部分文字" />
@@ -32,18 +33,25 @@
   <Comment text="如果选中文字，则仅修改这些选中的文字所在段落" />
   <ForEach var="text">
     <Array>QueryObjects("Text", GetCurrentPage())</Array>
-    <Expression>GetParentOfType($text, "Paragraph", $parent)</Expression>
-    <Comment text="判断当前段落是否被选中" />
+    <Comment text="判断当前分词是否被选中或者当前是否为非选定模式" />
     <If>
-      <Condition>(($parent.selection != "none") &amp;&amp; $modifySelectionOnly) || !$modifySelectionOnly</Condition>
+      <Condition>($text.selected &amp;&amp; $modifySelectionOnly) || !$modifySelectionOnly</Condition>
       <Comment text="提取第一个字符用以判断当前分词是否为英文。这里假定一个分词仅包含单一一种语言。" />
       <Expression>$firstChar = String_Substring($text.value, 0, 1)</Expression>
       <If>
         <Condition>String_LessThan($firstChar, Chr(255), false) &amp;&amp; String_GreaterThan($firstChar, Chr(0), false)</Condition>
         <Expression>$text.fontName = $enFont</Expression>
+        <If>
+          <Condition>($enFontSize != -1) &amp;&amp; ($enFontSize != 0)</Condition>
+          <Expression>$text.fontSize = $enFontSize</Expression>
+        </If>
       </If>
       <Else>
         <Expression>$text.fontName = $cnFont</Expression>
+        <If>
+          <Condition>($enFontSize != -1) &amp;&amp; ($enFontSize != 0)</Condition>
+          <Expression>$text.fontSize = $cnFontSize</Expression>
+        </If>
       </Else>
     </If>
   </ForEach>
